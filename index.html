@@ -48,6 +48,19 @@
     border: none; border-radius: 6px; background: #2e8b57; color: #fff;
     font-size: 15px; font-weight: 700; cursor: pointer;
   }
+  /* Compact layout for narrow Notion side columns */
+  body { padding: 6px; }
+  h1 { font-size: 18px; letter-spacing: 2px; margin: 0; }
+  .subtitle { font-size: 10px; margin-bottom: 6px; }
+  #board { gap: 3px; margin-bottom: 6px; }
+  .row { gap: 3px; }
+  .tile { width: 30px; height: 30px; font-size: 15px; border-width: 1px; }
+  #message { font-size: 12px; min-height: 16px; margin-bottom: 4px; }
+  #keyboard { gap: 3px; width: 100%; }
+  .krow { gap: 3px; width: 100%; justify-content: center; }
+  .key { flex: 1; min-width: 0; max-width: 24px; height: 30px; padding: 0; font-size: 11px; }
+  .key.wide { flex: 1.6; min-width: 0; max-width: none; font-size: 9px; }
+  #share { padding: 6px 10px; font-size: 12px; margin-top: 6px; }
 </style>
 </head>
 <body>
