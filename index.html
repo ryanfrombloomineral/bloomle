@@ -5,102 +5,100 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bloomle</title>
 <style>
-  body {
-    font-family: system-ui, -apple-system, sans-serif;
-    background: #f4f7f2;
-    color: #1d2b22;
+  /* The game is designed at a fixed size (300 x 540 px).
+     JavaScript scales it down to fit whatever box it sits in. */
+  html, body {
     margin: 0;
-    padding: 12px;
+    height: 100%;
+    overflow: hidden;
+    background: #f4f7f2;
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #1d2b22;
+  }
+  #wrap {
+    position: relative;
+    margin: 0 auto;
+  }
+  #game {
+    position: absolute;
+    top: 0; left: 0;
+    width: 300px;
+    transform-origin: top left;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  h1 { margin: 4px 0 2px; font-size: 26px; letter-spacing: 3px; }
-  .subtitle { font-size: 13px; color: #5d6f62; margin-bottom: 12px; }
-  #board { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  h1 { margin: 0; font-size: 22px; letter-spacing: 3px; }
+  .subtitle { font-size: 12px; color: #5d6f62; margin: 2px 0 8px; }
+  #board { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
   .row { display: flex; gap: 6px; justify-content: center; }
   .tile {
-    width: 48px; height: 48px;
+    width: 44px; height: 44px;
     border: 2px solid #c9d6cb;
     border-radius: 4px;
     background: #fff;
     display: flex; align-items: center; justify-content: center;
     font-size: 22px; font-weight: 700; text-transform: uppercase;
+    box-sizing: border-box;
   }
   .tile.correct { background: #2e8b57; border-color: #2e8b57; color: #fff; }
   .tile.present { background: #e0b33c; border-color: #e0b33c; color: #fff; }
   .tile.absent  { background: #8c9a90; border-color: #8c9a90; color: #fff; }
-  #message { min-height: 22px; font-weight: 600; margin-bottom: 8px; text-align: center; }
-  #keyboard { display: flex; flex-direction: column; gap: 6px; align-items: center; }
-  .krow { display: flex; gap: 5px; }
+  #message { min-height: 20px; font-size: 13px; font-weight: 600; margin-bottom: 6px; text-align: center; }
+  #keyboard { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+  .krow { display: flex; gap: 4px; }
   .key {
-    min-width: 30px; height: 44px; padding: 0 5px;
+    width: 26px; height: 38px; padding: 0;
     border: none; border-radius: 4px;
     background: #d9e3dc; color: #1d2b22;
-    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-size: 13px; font-weight: 700; cursor: pointer;
   }
-  .key.wide { min-width: 56px; font-size: 11px; }
+  .key.wide { width: 40px; font-size: 10px; }
   .key.correct { background: #2e8b57; color: #fff; }
   .key.present { background: #e0b33c; color: #fff; }
   .key.absent  { background: #8c9a90; color: #fff; }
   #share {
-    display: none; margin-top: 12px; padding: 10px 18px;
+    display: none; margin-top: 10px; padding: 8px 14px;
     border: none; border-radius: 6px; background: #2e8b57; color: #fff;
-    font-size: 15px; font-weight: 700; cursor: pointer;
+    font-size: 13px; font-weight: 700; cursor: pointer;
   }
-  /* Compact layout for narrow Notion side columns */
-  body { padding: 6px; }
-  h1 { font-size: 18px; letter-spacing: 2px; margin: 0; }
-  .subtitle { font-size: 10px; margin-bottom: 6px; }
-  #board { gap: 3px; margin-bottom: 6px; }
-  .row { gap: 3px; }
-  .tile { width: 30px; height: 30px; font-size: 15px; border-width: 1px; }
-  #message { font-size: 12px; min-height: 16px; margin-bottom: 4px; }
-  #keyboard { gap: 3px; width: 100%; }
-  .krow { gap: 3px; width: 100%; justify-content: center; }
-  .key { flex: 1; min-width: 0; max-width: 24px; height: 30px; padding: 0; font-size: 11px; }
-  .key.wide { flex: 1.6; min-width: 0; max-width: none; font-size: 9px; }
-  #share { padding: 6px 10px; font-size: 12px; margin-top: 6px; }
-  /* Width-responsive layout: sizes scale with the embed box width (vw),
-     capped at a maximum so the game doesn't get huge on a wide screen. */
-  body { padding: 4px; }
-  h1 { font-size: min(6vw, 18px); letter-spacing: 1px; }
-  .subtitle { font-size: min(3vw, 10px); margin-bottom: min(1.5vw, 6px); }
-  #board { gap: min(1vw, 3px); margin-bottom: min(1.5vw, 6px); }
-  .row { gap: min(1.5vw, 3px); }
-  .tile {
-    width: min(13vw, 30px); height: min(13vw, 30px);
-    font-size: min(7vw, 15px); border-width: 1px;
-  }
-  #message { font-size: min(3.6vw, 12px); min-height: min(5vw, 16px); margin-bottom: min(1vw, 4px); }
-  #keyboard { gap: min(1.2vw, 3px); }
-  .krow { gap: min(0.8vw, 3px); }
-  .key {
-    width: min(8.5vw, 24px); height: min(11vw, 30px);
-    min-width: 0; max-width: none; padding: 0;
-    font-size: min(3.6vw, 11px);
-  }
-  .key.wide {
-    width: min(13vw, 40px); min-width: 0; max-width: none; flex: none;
-    font-size: min(2.6vw, 9px);
-  }
-  #share { padding: 4px 8px; font-size: min(3.5vw, 12px); margin-top: min(1.5vw, 6px); }
 </style>
 </head>
 <body>
 
-<h1>BLOOMLE</h1>
-<div class="subtitle" id="week"></div>
-<div id="board"></div>
-<div id="message"></div>
-<div id="keyboard"></div>
-<button id="share">Copy result</button>
+<div id="wrap">
+  <div id="game">
+    <h1>BLOOMLE</h1>
+    <div class="subtitle" id="week"></div>
+    <div id="board"></div>
+    <div id="message"></div>
+    <div id="keyboard"></div>
+    <button id="share">Copy result</button>
+  </div>
+</div>
 
 <script>
 // ---------- SETTINGS ----------
 // The word list lives in words.json, next to this file on GitHub.
 // Edit that file to change words. Each word must be 5 letters.
 const WORDS_URL = "words.json";
+
+// Design size of the game (must match the CSS above)
+const DESIGN_WIDTH = 300;
+const DESIGN_HEIGHT = 540;
+
+// ---------- FIT TO BOX ----------
+// Scales the whole game so it fits the box it's in, keeping proportions.
+function fitGame() {
+  const game = document.getElementById("game");
+  const wrap = document.getElementById("wrap");
+  const scale = Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT);
+  game.style.transform = "scale(" + scale + ")";
+  wrap.style.width = (DESIGN_WIDTH * scale) + "px";
+  wrap.style.height = (DESIGN_HEIGHT * scale) + "px";
+}
+window.addEventListener("resize", fitGame);
+fitGame();
 
 // ---------- WEEK LOGIC ----------
 // Weeks run Monday to Sunday. Week 0 starts on Monday, Jan 5, 2026.
@@ -114,8 +112,8 @@ function getWeekInfo() {
   const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
   const mondayUTC = Date.UTC(monday.getFullYear(), monday.getMonth(), monday.getDate());
   const weekNumber = Math.round((mondayUTC - EPOCH_MONDAY) / (7 * DAY_MS));
+
   // ISO week number (week 1 is the first week with a Thursday in January).
-  // Uses the Thursday of this week to find which year and week it belongs to.
   const thursday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 3);
   const dayOfYear = Math.round(
     (Date.UTC(thursday.getFullYear(), thursday.getMonth(), thursday.getDate()) -
