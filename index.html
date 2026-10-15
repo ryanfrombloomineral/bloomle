@@ -59,6 +59,13 @@
   .key.present { background: #91A8D0; color: #1d2b22; }
   .key.absent  { background: #8c9a90; color: #fff; }
 
+  /* "Suggest a word" link, shown after the game ends */
+  .suggest-btn {
+    margin-top: 6px; padding: 6px 14px;
+    border-radius: 6px; background: #0F4C82; color: #fff;
+    font-size: 13px; font-weight: 700; text-decoration: none;
+  }
+
   /* Info button, top-left corner */
   .info-btn {
     position: absolute; top: 4px; left: 4px;
@@ -109,6 +116,7 @@
     <div class="subtitle" id="week"></div>
     <div id="board"></div>
     <div id="message"></div>
+    <a id="suggest-btn" class="suggest-btn" hidden target="_blank" rel="noopener">Suggest a word</a>
     <div id="keyboard"></div>
 
     <div id="info" class="info-popup" hidden>
@@ -131,6 +139,10 @@
 // The word list lives in words.json, next to this file on GitHub.
 // Edit that file to change words. Each word must be 5 letters.
 const WORDS_URL = "words.json";
+
+// Google Form for word suggestions. Paste the form's link between the quotes.
+// While this is empty, the "Suggest a word" link stays hidden.
+const FORM_URL = "https://forms.gle/jXXJwTcYtSYW4sdM7";
 
 // ---------- FIT TO BOX ----------
 // Measures the game's real size, then scales it to fill the box it's in
@@ -291,6 +303,12 @@ function render() {
     showMessage(won
       ? "Nice! Solved in " + guesses.length + "."
       : "The word was " + answer + ".", true);
+
+    const suggest = document.getElementById("suggest-btn");
+    if (FORM_URL) {
+      suggest.href = FORM_URL;
+      suggest.hidden = false;
+    }
   }
   fitGame();
 }
