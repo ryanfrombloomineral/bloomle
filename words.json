@@ -1,15 +1,15 @@
 [
   "X", "X", "X", "X",
   "VIALS", "SHORE", "BRICK", "X",
-  "SITES", "GRIND", "INPUT", "PROOF",
+  "WATER", "GRIND", "INPUT", "PROOF",
   "CAPEX", "TONNE", "HIRES", "PHASE",
-  "TANKS", "ALGAE", "PITCH", "WASTE",
+  "TANKS", "CORAL", "PITCH", "PARIS",
   "ANGEL", "METRO", "FIBER", "BLOOM",
   "GRANT", "OCEAN", "BUILD", "SCALE",
   "QONTO", "WHITE", "PAPER", "PILOT",
   "COLOR", "WAVES", "NOTES", "MACRO",
   "EVENT", "LIMES", "SLACK", "OXIDE",
-  "PARIS", "GREEN", "YIELD", "PAINT",
-  "CORAL", "MINED", "METAL", "SPECS",
-  "FUNDS", "WATER", "PIVOT", "MACRO"
+  "WASTE", "GREEN", "YIELD", "PAINT",
+  "ALGAE", "MINED", "METAL", "SPECS",
+  "FUNDS", "SITES", "PIVOT", "MACRO"
 ]
