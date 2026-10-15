@@ -59,19 +59,6 @@
   .key.present { background: #91A8D0; color: #1d2b22; }
   .key.absent  { background: #8c9a90; color: #fff; }
 
-  /* Personal stats, shown after the game ends */
-  .stats { width: 100%; margin: 2px 0 4px; font-size: 12px; }
-  .stats-nums { display: flex; justify-content: space-around; margin-bottom: 6px; color: #5d6f62; }
-  .stats-nums b { display: block; font-size: 18px; color: #0F4C82; text-align: center; }
-  .dist { display: flex; flex-direction: column; gap: 3px; }
-  .dist-row { display: flex; align-items: center; gap: 6px; }
-  .dist-label { width: 10px; font-weight: 700; }
-  .dist-bar {
-    background: #91A8D0; color: #1d2b22; font-weight: 700;
-    padding: 1px 6px; text-align: right; min-width: 8px; border-radius: 2px;
-  }
-  .dist-bar.latest { background: #0F4C82; color: #fff; }
-
   /* "Suggest a word" link, shown after the game ends */
   .suggest-btn {
     display: block; width: fit-content; margin: 0 auto 6px; padding: 6px 14px;
@@ -79,44 +66,49 @@
     font-size: 13px; font-weight: 700; text-decoration: none;
   }
 
-  /* Info button, top-left corner */
+  /* Info button, fixed in the top-left corner of the embed */
   .info-btn {
     position: fixed; top: 6px; left: 6px; z-index: 20;
-    width: 24px; height: 24px;
+    width: 20px; height: 20px;
     border: 2px solid #0F4C82; border-radius: 50%;
     background: #fff; color: #0F4C82;
-    font-size: 14px; font-weight: 800; font-family: Georgia, serif;
-    cursor: pointer; padding: 0; line-height: 20px;
+    font-size: 11px; font-weight: 800; font-family: Georgia, serif;
+    cursor: pointer; padding: 0; line-height: 16px;
   }
 
-  /* How-to-play popup, covers the game inside the embed */
+  /* How-to-play popup, fills the game area */
   .info-popup {
     position: absolute; top: 0; left: 0;
     width: 100%; height: 100%;
     box-sizing: border-box;
     background: #fff;
     border: 2px solid #0F4C82; border-radius: 8px;
-    padding: 14px 16px;
-    display: flex; flex-direction: column; gap: 10px;
-    font-size: 15px; line-height: 1.45;
+    padding: 16px 18px;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    font-size: 18px; line-height: 1.4;
     z-index: 10;
   }
-  .info-popup h2 { margin: 0; font-size: 20px; color: #0F4C82; }
+  .info-popup h2 { margin: 0; font-size: 26px; color: #0F4C82; }
   .info-popup p { margin: 0; }
-  .info-popup .new-word { color: #0F4C82; font-size: 16px; }
+  .info-popup .new-word { color: #0F4C82; font-weight: 700; }
   .info-popup .legend { display: flex; flex-direction: column; gap: 6px; }
   .sample {
-    display: inline-block; width: 16px; height: 16px;
-    border-radius: 3px; vertical-align: middle; margin-right: 6px;
+    display: inline-block; width: 18px; height: 18px;
+    border-radius: 3px; vertical-align: middle; margin-right: 8px;
   }
   .sample.correct { background: #0F4C82; }
   .sample.present { background: #91A8D0; }
   .sample.absent  { background: #8c9a90; }
+  .suggest-link {
+    display: block; text-align: center;
+    font-weight: 700; color: #0F4C82;
+    text-decoration: underline; cursor: pointer;
+  }
   .info-close {
-    margin-top: auto; align-self: center;
-    padding: 6px 16px; border: none; border-radius: 6px;
+    align-self: stretch;
+    padding: 12px 16px; border: none; border-radius: 8px;
     background: #0F4C82; color: #fff;
-    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-size: 20px; font-weight: 700; cursor: pointer;
   }
 </style>
 </head>
@@ -131,19 +123,19 @@
     <div id="board"></div>
     <a id="suggest-btn" class="suggest-btn" hidden target="_blank" rel="noopener">Suggest a word</a>
     <div id="message"></div>
-    <div id="stats" class="stats" hidden></div>
     <div id="keyboard"></div>
 
     <div id="info" class="info-popup" hidden>
       <h2>How to play</h2>
       <p>Guess this week's word in 6 tries.</p>
-      <p>The word is related to <strong>Bloomineral</strong> and our team.</p>
-      <p class="new-word"><strong>New word every Monday!</strong></p>
+      <p>The word is about <strong>Bloomineral</strong> or our team.</p>
+      <p class="new-word">New word every Monday!</p>
       <div class="legend">
-        <p><span class="sample correct"></span>Right letter, right spot</p>
-        <p><span class="sample present"></span>Right letter, wrong spot</p>
-        <p><span class="sample absent"></span>Letter not in the word</p>
+        <p><span class="sample correct"></span>Dark blue: right letter, right spot</p>
+        <p><span class="sample present"></span>Light blue: right letter, wrong spot</p>
+        <p><span class="sample absent"></span>Grey: letter not in the word</p>
       </div>
+      <a id="suggest-link" class="suggest-link" target="_blank" rel="noopener">Click here to suggest new words</a>
       <button id="info-close" class="info-close">Got it</button>
     </div>
   </div>
@@ -156,8 +148,8 @@
 const WORDS_URL = "words.json";
 
 // Google Form for word suggestions. Paste the form's link between the quotes.
-// While this is empty, the "Suggest a word" link stays hidden.
-const FORM_URL = "";
+// While this is empty, the suggestion links stay hidden.
+const FORM_URL = "https://forms.gle/qcvvMUMTcUhTyZ1n8";
 
 // ---------- FIT TO BOX ----------
 // Measures the game's real size, then scales it to fill the box it's in
@@ -242,59 +234,6 @@ function scoreGuess(guess, target) {
   return result;
 }
 
-// ---------- STATS (saved on this device only) ----------
-const STATS_KEY = "bloomle-stats";
-
-function loadStats() {
-  return JSON.parse(localStorage.getItem(STATS_KEY) || "null") || {
-    played: 0, won: 0, streak: 0, maxStreak: 0,
-    dist: [0, 0, 0, 0, 0, 0], counted: []
-  };
-}
-
-// Records a finished week once, so reopening the page doesn't double count
-function recordStats(won, tries) {
-  const s = loadStats();
-  if (s.counted.includes(info.key)) return s;
-  s.counted.push(info.key);
-  s.played++;
-  if (won) {
-    s.won++;
-    s.streak++;
-    s.maxStreak = Math.max(s.maxStreak, s.streak);
-    s.dist[tries - 1]++;
-  } else {
-    s.streak = 0;
-  }
-  localStorage.setItem(STATS_KEY, JSON.stringify(s));
-  return s;
-}
-
-// Draws the Wordle-style panel: totals, then bars for 1 to 6 tries
-function renderStats(s, won, tries) {
-  const el = document.getElementById("stats");
-  const winPct = s.played ? Math.round((s.won / s.played) * 100) : 0;
-  const max = Math.max(1, ...s.dist);
-
-  let html = '<div class="stats-nums">'
-    + '<span><b>' + s.played + '</b>Played</span>'
-    + '<span><b>' + winPct + '</b>Win %</span>'
-    + '<span><b>' + s.streak + '</b>Streak</span>'
-    + '<span><b>' + s.maxStreak + '</b>Best</span>'
-    + '</div><div class="dist">';
-
-  s.dist.forEach((count, i) => {
-    const latest = won && tries === i + 1 ? " latest" : "";
-    const pct = Math.max(8, Math.round((count / max) * 100));
-    html += '<div class="dist-row"><span class="dist-label">' + (i + 1) + '</span>'
-      + '<div class="dist-bar' + latest + '" style="width:' + pct + '%">' + count + '</div></div>';
-  });
-  html += '</div>';
-
-  el.innerHTML = html;
-  el.hidden = false;
-}
-
 // ---------- RENDERING ----------
 const board = document.getElementById("board");
 const keyboard = document.getElementById("keyboard");
@@ -372,9 +311,6 @@ function render() {
       ? "Nice! Solved in " + guesses.length + "."
       : "The word was " + answer + ".", true);
 
-    const stats = recordStats(won, guesses.length);
-    renderStats(stats, won, guesses.length);
-
     const suggest = document.getElementById("suggest-btn");
     if (FORM_URL) {
       suggest.href = FORM_URL;
@@ -422,9 +358,23 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ---------- INFO POPUP ----------
+// The (i) button opens and closes the popup. "Got it" closes it too.
 const infoPopup = document.getElementById("info");
-document.getElementById("info-btn").onclick = () => { infoPopup.hidden = false; };
-document.getElementById("info-close").onclick = () => { infoPopup.hidden = true; };
+const suggestLink = document.getElementById("suggest-link");
+
+document.getElementById("info-btn").onclick = () => {
+  infoPopup.hidden = !infoPopup.hidden;
+};
+document.getElementById("info-close").onclick = () => {
+  infoPopup.hidden = true;
+};
+
+// The suggestion link inside the popup only shows once the form link is set
+if (FORM_URL) {
+  suggestLink.href = FORM_URL;
+} else {
+  suggestLink.hidden = true;
+}
 
 // ---------- START ----------
 // Load the word list, then pick this week's word
@@ -445,6 +395,7 @@ fetch(WORDS_URL)
 
 // Fit once on load, even before the word list arrives
 fitGame();
+window.addEventListener("resize", fitGame);
 </script>
 </body>
 </html>
