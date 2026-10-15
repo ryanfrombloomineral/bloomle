@@ -42,11 +42,11 @@
     font-size: 22px; font-weight: 700; text-transform: uppercase;
     box-sizing: border-box;
   }
-  .tile.correct { background: #2e8b57; border-color: #2e8b57; color: #fff; }
-  .tile.present { background: #e0b33c; border-color: #e0b33c; color: #fff; }
+  .tile.correct { background: #0F4C82; border-color: #0F4C82; color: #fff; }
+  .tile.present { background: #91A8D0; border-color: #91A8D0; color: #1d2b22; }
   .tile.absent  { background: #8c9a90; border-color: #8c9a90; color: #fff; }
   #message { min-height: 16px; font-size: 13px; font-weight: 600; margin-bottom: 4px; text-align: center; }
-  #keyboard { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+  #keyboard { display: flex; flex-direction: column; gap: 5px; align-items: center; margin-bottom: 4px; }
   .krow { display: flex; gap: 4px; }
   .key {
     width: 26px; height: 38px; padding: 0;
@@ -55,16 +55,16 @@
     font-size: 13px; font-weight: 700; cursor: pointer;
   }
   .key.wide { width: 40px; font-size: 10px; }
-  .key.correct { background: #2e8b57; color: #fff; }
-  .key.present { background: #e0b33c; color: #fff; }
+  .key.correct { background: #0F4C82; color: #fff; }
+  .key.present { background: #91A8D0; color: #1d2b22; }
   .key.absent  { background: #8c9a90; color: #fff; }
 
   /* Info button, top-left corner */
   .info-btn {
-    position: absolute; top: 0; left: 0;
+    position: absolute; top: 4px; left: 4px;
     width: 24px; height: 24px;
-    border: 2px solid #0f4c81; border-radius: 50%;
-    background: #fff; color: #0f4c81;
+    border: 2px solid #0F4C82; border-radius: 50%;
+    background: #fff; color: #0F4C82;
     font-size: 14px; font-weight: 800; font-family: Georgia, serif;
     cursor: pointer; padding: 0; line-height: 20px;
   }
@@ -75,26 +75,27 @@
     width: 100%; height: 100%;
     box-sizing: border-box;
     background: #fff;
-    border: 2px solid #0f4c81; border-radius: 8px;
-    padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 8px;
-    font-size: 13px; line-height: 1.4;
+    border: 2px solid #0F4C82; border-radius: 8px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    font-size: 15px; line-height: 1.45;
     z-index: 10;
   }
-  .info-popup h2 { margin: 0; font-size: 16px; color: #0f4c81; }
+  .info-popup h2 { margin: 0; font-size: 20px; color: #0F4C82; }
   .info-popup p { margin: 0; }
-  .info-popup .legend { display: flex; flex-direction: column; gap: 4px; }
+  .info-popup .new-word { color: #0F4C82; font-size: 16px; }
+  .info-popup .legend { display: flex; flex-direction: column; gap: 6px; }
   .sample {
     display: inline-block; width: 16px; height: 16px;
     border-radius: 3px; vertical-align: middle; margin-right: 6px;
   }
-  .sample.correct { background: #2e8b57; }
-  .sample.present { background: #e0b33c; }
+  .sample.correct { background: #0F4C82; }
+  .sample.present { background: #91A8D0; }
   .sample.absent  { background: #8c9a90; }
   .info-close {
     margin-top: auto; align-self: center;
     padding: 6px 16px; border: none; border-radius: 6px;
-    background: #0f4c81; color: #fff;
+    background: #0F4C82; color: #fff;
     font-size: 13px; font-weight: 700; cursor: pointer;
   }
 </style>
@@ -114,7 +115,7 @@
       <h2>How to play</h2>
       <p>Guess this week's word in 6 tries.</p>
       <p>The word is related to <strong>Bloomineral</strong> and our team.</p>
-      <p><strong>A new word every Monday.</strong></p>
+      <p class="new-word"><strong>New word every Monday!</strong></p>
       <div class="legend">
         <p><span class="sample correct"></span>Right letter, right spot</p>
         <p><span class="sample present"></span>Right letter, wrong spot</p>
