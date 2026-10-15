@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bloomle</title>
 <style>
-  /* The game is designed at a fixed size (300 x 540 px).
-     JavaScript scales it down to fit whatever box it sits in. */
+  /* The game is designed at a fixed width (300px). JavaScript measures the
+     real size of the content and scales it to fill the box it sits in. */
   html, body {
     margin: 0;
     height: 100%;
@@ -15,6 +15,7 @@
     font-family: system-ui, -apple-system, sans-serif;
     color: #1d2b22;
   }
+  [hidden] { display: none !important; }
   #wrap {
     position: relative;
     margin: 0 auto;
@@ -28,7 +29,7 @@
     flex-direction: column;
     align-items: center;
   }
-  h1 { margin: 0; font-size: 22px; letter-spacing: 3px; }
+  .logo { height: 40px; width: auto; display: block; margin-bottom: 2px; }
   .subtitle { font-size: 12px; color: #5d6f62; margin: 1px 0 4px; }
   #board { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
   .row { display: flex; gap: 6px; justify-content: center; }
@@ -57,9 +58,43 @@
   .key.correct { background: #2e8b57; color: #fff; }
   .key.present { background: #e0b33c; color: #fff; }
   .key.absent  { background: #8c9a90; color: #fff; }
-  #share {
-    display: none; margin-top: 10px; padding: 8px 14px;
-    border: none; border-radius: 6px; background: #2e8b57; color: #fff;
+
+  /* Info button, top-left corner */
+  .info-btn {
+    position: absolute; top: 0; left: 0;
+    width: 24px; height: 24px;
+    border: 2px solid #0f4c81; border-radius: 50%;
+    background: #fff; color: #0f4c81;
+    font-size: 14px; font-weight: 800; font-family: Georgia, serif;
+    cursor: pointer; padding: 0; line-height: 20px;
+  }
+
+  /* How-to-play popup, covers the game inside the embed */
+  .info-popup {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    border: 2px solid #0f4c81; border-radius: 8px;
+    padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    font-size: 13px; line-height: 1.4;
+    z-index: 10;
+  }
+  .info-popup h2 { margin: 0; font-size: 16px; color: #0f4c81; }
+  .info-popup p { margin: 0; }
+  .info-popup .legend { display: flex; flex-direction: column; gap: 4px; }
+  .sample {
+    display: inline-block; width: 16px; height: 16px;
+    border-radius: 3px; vertical-align: middle; margin-right: 6px;
+  }
+  .sample.correct { background: #2e8b57; }
+  .sample.present { background: #e0b33c; }
+  .sample.absent  { background: #8c9a90; }
+  .info-close {
+    margin-top: auto; align-self: center;
+    padding: 6px 16px; border: none; border-radius: 6px;
+    background: #0f4c81; color: #fff;
     font-size: 13px; font-weight: 700; cursor: pointer;
   }
 </style>
@@ -68,12 +103,25 @@
 
 <div id="wrap">
   <div id="game">
-    <h1>BLOOMLE</h1>
+    <button id="info-btn" class="info-btn" aria-label="How to play">i</button>
+    <img class="logo" src="logo.png" alt="Bloomle">
     <div class="subtitle" id="week"></div>
     <div id="board"></div>
     <div id="message"></div>
     <div id="keyboard"></div>
-    <button id="share">Copy result</button>
+
+    <div id="info" class="info-popup" hidden>
+      <h2>How to play</h2>
+      <p>Guess this week's word in 6 tries.</p>
+      <p>The word is related to <strong>Bloomineral</strong> and our team.</p>
+      <p><strong>A new word every Monday.</strong></p>
+      <div class="legend">
+        <p><span class="sample correct"></span>Right letter, right spot</p>
+        <p><span class="sample present"></span>Right letter, wrong spot</p>
+        <p><span class="sample absent"></span>Letter not in the word</p>
+      </div>
+      <button id="info-close" class="info-close">Got it</button>
+    </div>
   </div>
 </div>
 
@@ -85,7 +133,7 @@ const WORDS_URL = "words.json";
 
 // ---------- FIT TO BOX ----------
 // Measures the game's real size, then scales it to fill the box it's in
-// while keeping its proportions. The content fills the space with no extra margins.
+// while keeping its proportions.
 function fitGame() {
   const game = document.getElementById("game");
   const wrap = document.getElementById("wrap");
@@ -97,7 +145,6 @@ function fitGame() {
   wrap.style.height = (h * scale) + "px";
 }
 window.addEventListener("resize", fitGame);
-fitGame();
 
 // ---------- WEEK LOGIC ----------
 // Weeks run Monday to Sunday. Week 0 starts on Monday, Jan 5, 2026.
@@ -171,7 +218,6 @@ function scoreGuess(guess, target) {
 const board = document.getElementById("board");
 const keyboard = document.getElementById("keyboard");
 const message = document.getElementById("message");
-const shareBtn = document.getElementById("share");
 
 document.getElementById("week").textContent =
   "Week " + info.isoWeek + " · " + formatWeekRange(info.monday, info.sunday);
@@ -244,7 +290,6 @@ function render() {
     showMessage(won
       ? "Nice! Solved in " + guesses.length + "."
       : "The word was " + answer + ".", true);
-    shareBtn.style.display = "inline-block";
   }
   fitGame();
 }
@@ -280,23 +325,16 @@ function submitGuess() {
 }
 
 document.addEventListener("keydown", (e) => {
+  if (!document.getElementById("info").hidden) return; // ignore typing while info is open
   if (e.key === "Enter") handleInput("ENTER");
   else if (e.key === "Backspace") handleInput("BACK");
   else if (/^[a-zA-Z]$/.test(e.key)) handleInput(e.key);
 });
 
-// ---------- SHARE ----------
-// Colored-square summary, like Wordle, without revealing the word
-shareBtn.onclick = () => {
-  const squares = { correct: "🟩", present: "🟨", absent: "⬜" };
-  const grid = guesses.map(g => g.result.map(r => squares[r]).join("")).join("\n");
-  const won = guesses[guesses.length - 1].word === answer;
-  const text = "Bloomle " + formatWeekRange(info.monday, info.sunday) + " — "
-             + (won ? guesses.length : "X") + "/6\n" + grid;
-  navigator.clipboard.writeText(text)
-    .then(() => showMessage("Copied to clipboard"))
-    .catch(() => showMessage("Copy failed. Try again."));
-};
+// ---------- INFO POPUP ----------
+const infoPopup = document.getElementById("info");
+document.getElementById("info-btn").onclick = () => { infoPopup.hidden = false; };
+document.getElementById("info-close").onclick = () => { infoPopup.hidden = true; };
 
 // ---------- START ----------
 // Load the word list, then pick this week's word
@@ -311,8 +349,12 @@ fetch(WORDS_URL)
   })
   .catch(err => {
     showMessage("Couldn't load this week's word. Check that words.json is uploaded.", true);
+    fitGame();
     console.error(err);
   });
+
+// Fit once on load, even before the word list arrives
+fitGame();
 </script>
 </body>
 </html>
