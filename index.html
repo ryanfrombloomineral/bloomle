@@ -59,16 +59,29 @@
   .key.present { background: #91A8D0; color: #1d2b22; }
   .key.absent  { background: #8c9a90; color: #fff; }
 
+  /* Personal stats, shown after the game ends */
+  .stats { width: 100%; margin: 2px 0 4px; font-size: 12px; }
+  .stats-nums { display: flex; justify-content: space-around; margin-bottom: 6px; color: #5d6f62; }
+  .stats-nums b { display: block; font-size: 18px; color: #0F4C82; text-align: center; }
+  .dist { display: flex; flex-direction: column; gap: 3px; }
+  .dist-row { display: flex; align-items: center; gap: 6px; }
+  .dist-label { width: 10px; font-weight: 700; }
+  .dist-bar {
+    background: #91A8D0; color: #1d2b22; font-weight: 700;
+    padding: 1px 6px; text-align: right; min-width: 8px; border-radius: 2px;
+  }
+  .dist-bar.latest { background: #0F4C82; color: #fff; }
+
   /* "Suggest a word" link, shown after the game ends */
   .suggest-btn {
-    margin-top: 6px; padding: 6px 14px;
+    display: block; width: fit-content; margin: 0 auto 6px; padding: 6px 14px;
     border-radius: 6px; background: #0F4C82; color: #fff;
     font-size: 13px; font-weight: 700; text-decoration: none;
   }
 
   /* Info button, top-left corner */
   .info-btn {
-    position: absolute; top: 4px; left: 4px;
+    position: fixed; top: 6px; left: 6px; z-index: 20;
     width: 24px; height: 24px;
     border: 2px solid #0F4C82; border-radius: 50%;
     background: #fff; color: #0F4C82;
@@ -109,14 +122,16 @@
 </head>
 <body>
 
+<button id="info-btn" class="info-btn" aria-label="How to play">i</button>
+
 <div id="wrap">
   <div id="game">
-    <button id="info-btn" class="info-btn" aria-label="How to play">i</button>
     <img class="logo" src="logo.png" alt="Bloomle">
     <div class="subtitle" id="week"></div>
     <div id="board"></div>
-    <div id="message"></div>
     <a id="suggest-btn" class="suggest-btn" hidden target="_blank" rel="noopener">Suggest a word</a>
+    <div id="message"></div>
+    <div id="stats" class="stats" hidden></div>
     <div id="keyboard"></div>
 
     <div id="info" class="info-popup" hidden>
@@ -142,7 +157,7 @@ const WORDS_URL = "words.json";
 
 // Google Form for word suggestions. Paste the form's link between the quotes.
 // While this is empty, the "Suggest a word" link stays hidden.
-const FORM_URL = "https://forms.gle/jXXJwTcYtSYW4sdM7";
+const FORM_URL = "";
 
 // ---------- FIT TO BOX ----------
 // Measures the game's real size, then scales it to fill the box it's in
@@ -227,6 +242,59 @@ function scoreGuess(guess, target) {
   return result;
 }
 
+// ---------- STATS (saved on this device only) ----------
+const STATS_KEY = "bloomle-stats";
+
+function loadStats() {
+  return JSON.parse(localStorage.getItem(STATS_KEY) || "null") || {
+    played: 0, won: 0, streak: 0, maxStreak: 0,
+    dist: [0, 0, 0, 0, 0, 0], counted: []
+  };
+}
+
+// Records a finished week once, so reopening the page doesn't double count
+function recordStats(won, tries) {
+  const s = loadStats();
+  if (s.counted.includes(info.key)) return s;
+  s.counted.push(info.key);
+  s.played++;
+  if (won) {
+    s.won++;
+    s.streak++;
+    s.maxStreak = Math.max(s.maxStreak, s.streak);
+    s.dist[tries - 1]++;
+  } else {
+    s.streak = 0;
+  }
+  localStorage.setItem(STATS_KEY, JSON.stringify(s));
+  return s;
+}
+
+// Draws the Wordle-style panel: totals, then bars for 1 to 6 tries
+function renderStats(s, won, tries) {
+  const el = document.getElementById("stats");
+  const winPct = s.played ? Math.round((s.won / s.played) * 100) : 0;
+  const max = Math.max(1, ...s.dist);
+
+  let html = '<div class="stats-nums">'
+    + '<span><b>' + s.played + '</b>Played</span>'
+    + '<span><b>' + winPct + '</b>Win %</span>'
+    + '<span><b>' + s.streak + '</b>Streak</span>'
+    + '<span><b>' + s.maxStreak + '</b>Best</span>'
+    + '</div><div class="dist">';
+
+  s.dist.forEach((count, i) => {
+    const latest = won && tries === i + 1 ? " latest" : "";
+    const pct = Math.max(8, Math.round((count / max) * 100));
+    html += '<div class="dist-row"><span class="dist-label">' + (i + 1) + '</span>'
+      + '<div class="dist-bar' + latest + '" style="width:' + pct + '%">' + count + '</div></div>';
+  });
+  html += '</div>';
+
+  el.innerHTML = html;
+  el.hidden = false;
+}
+
 // ---------- RENDERING ----------
 const board = document.getElementById("board");
 const keyboard = document.getElementById("keyboard");
@@ -303,6 +371,9 @@ function render() {
     showMessage(won
       ? "Nice! Solved in " + guesses.length + "."
       : "The word was " + answer + ".", true);
+
+    const stats = recordStats(won, guesses.length);
+    renderStats(stats, won, guesses.length);
 
     const suggest = document.getElementById("suggest-btn");
     if (FORM_URL) {
