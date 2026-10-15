@@ -29,8 +29,8 @@
     align-items: center;
   }
   h1 { margin: 0; font-size: 22px; letter-spacing: 3px; }
-  .subtitle { font-size: 12px; color: #5d6f62; margin: 2px 0 8px; }
-  #board { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .subtitle { font-size: 12px; color: #5d6f62; margin: 1px 0 4px; }
+  #board { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
   .row { display: flex; gap: 6px; justify-content: center; }
   .tile {
     width: 44px; height: 44px;
@@ -44,7 +44,7 @@
   .tile.correct { background: #2e8b57; border-color: #2e8b57; color: #fff; }
   .tile.present { background: #e0b33c; border-color: #e0b33c; color: #fff; }
   .tile.absent  { background: #8c9a90; border-color: #8c9a90; color: #fff; }
-  #message { min-height: 20px; font-size: 13px; font-weight: 600; margin-bottom: 6px; text-align: center; }
+  #message { min-height: 16px; font-size: 13px; font-weight: 600; margin-bottom: 4px; text-align: center; }
   #keyboard { display: flex; flex-direction: column; gap: 5px; align-items: center; }
   .krow { display: flex; gap: 4px; }
   .key {
@@ -83,19 +83,18 @@
 // Edit that file to change words. Each word must be 5 letters.
 const WORDS_URL = "words.json";
 
-// Design size of the game (must match the CSS above)
-const DESIGN_WIDTH = 300;
-const DESIGN_HEIGHT = 540;
-
 // ---------- FIT TO BOX ----------
-// Scales the whole game so it fits the box it's in, keeping proportions.
+// Measures the game's real size, then scales it to fill the box it's in
+// while keeping its proportions. The content fills the space with no extra margins.
 function fitGame() {
   const game = document.getElementById("game");
   const wrap = document.getElementById("wrap");
-  const scale = Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT);
+  const w = game.offsetWidth;
+  const h = game.offsetHeight;
+  const scale = Math.min(window.innerWidth / w, window.innerHeight / h);
   game.style.transform = "scale(" + scale + ")";
-  wrap.style.width = (DESIGN_WIDTH * scale) + "px";
-  wrap.style.height = (DESIGN_HEIGHT * scale) + "px";
+  wrap.style.width = (w * scale) + "px";
+  wrap.style.height = (h * scale) + "px";
 }
 window.addEventListener("resize", fitGame);
 fitGame();
@@ -247,6 +246,7 @@ function render() {
       : "The word was " + answer + ".", true);
     shareBtn.style.display = "inline-block";
   }
+  fitGame();
 }
 
 // ---------- INPUT ----------
